@@ -40,7 +40,10 @@ class Model():
             act_func = tf.sigmoid;
         H = act_func(tf.matmul(self.X,self.W1)+self.b1);
         PY = act_func(tf.matmul(H,self.W2)+self.b2);
-        loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(labels=self.Y, logits=PY, name="loss")); # 交叉熵 损失函数
+        PY_ = tf.nn.softmax(PY);
+        loss = -tf.reduce_mean(self.Y * tf.log(PY));
+        # loss = -tf.reduce_mean(self.Y * tf.log(PY_)+(1-self.Y) * tf.log((1-PY_)));
+        # loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(labels=self.Y, logits=PY, name="loss")); # 交叉熵 损失函数
         return PY,loss;
     
     
@@ -53,7 +56,7 @@ class Model():
                 start = (i*batch_size) % dat_size;
                 end = min(start+batch_size,dat_size);
                 _,py,loss,x,y=sess.run((train_setp,self.PY,self.loss,self.X,self.Y),{self.X:XS[start:end],self.Y:YS[start:end]})
-#                 print(x,y);
+                # print(x,y,py);
                 if i % 100 ==0:
                     print('step= %d '%(i),loss,py);
             print('\n finished! ',loss,py);      
@@ -91,9 +94,9 @@ xs =[
     ];
 txs=[
     [0.15,0.15],
-    [-0.08,0.3],
-    [0.25,0.09],
-    [0.0,0.1],
+    [-0.15,0.15],
+    [-0.15,-0.15],
+    [0.15,-0.15],
 #     [0.1,0.19],
 #     [-0.15,0.15],
 #     [0.15,-0.15],
@@ -108,14 +111,22 @@ txs=[
 #     [-0.15,-0.15]                
     ];
 ys =[
+#     [1],[1],[1],[1],
+#     [0],[0],[0],[0],
+#     [1],[1],[1],[1],
+#     [0],[0],[0],[0]
+#     [1,0],[1,0],[1,0],[1,0],
+#     [0,1],[0,1],[0,1],[0,1],
+#     [1,0],[1,0],[1,0],[1,0],
+#     [0,1],[0,1],[0,1],[0,1]
     [1,0],[1,0],[1,0],[1,0],
     [0,1],[0,1],[0,1],[0,1],
-    [1,0],[1,0],[1,0],[1,0],
-    [0,1],[0,1],[0,1],[0,1]
+    [1,1],[1,1],[1,1],[1,1],
+    [0,0],[0,0],[0,0],[0,0]
     ];
 tys =[
-    [1,0],[1,0],[1,0],[1,0],
-#     [0,1],[0,1],[0,1],[0,1],
+#     [1],[1],[1],[1]
+    [0,1],[0,1],[0,1],[0,1],
 #     [1,0],[1,0],[1,0],[1,0],
 #     [0,1],[0,1],[0,1],[0,1]
     ];     
@@ -132,7 +143,7 @@ def act_func(X):
     return tf.sigmoid(X);
 
 learn_rate = 0.1;
-steps = 1000;
+steps = 2000;
 batch_size = 16;
 dat_size=16;
 
